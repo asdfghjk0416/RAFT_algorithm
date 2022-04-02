@@ -1,4 +1,5 @@
 import follower
+import Leader
 
 IDtoUse = 0
 
@@ -11,5 +12,5 @@ class Node:
         IDtoUse += 1
         self.state = follower()
 
-    def changeID(self):
-        self.id = 1000
+    def ChangeState(self):
+        self.state = Leader()
