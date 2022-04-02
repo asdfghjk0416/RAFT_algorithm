@@ -1,4 +1,4 @@
-#Phase 3 : Raft Leader Elections
+Phase 3 : Raft Leader Elections
 The following readme file has been provided to explain the project
 structure and how to structure/organize your code.
 
