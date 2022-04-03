@@ -4,4 +4,4 @@ class node:
         self.role = role
 
 
-nodes =[node("node1","leader"),node("node2","follower"),node("node3","follower"),node("node4","follower"),node("node5","follower")]
+nodes =[node("Node1","leader"),node("Node2","follower"),node("node3","follower"),node("Node4","follower"),node("Node5","follower")]

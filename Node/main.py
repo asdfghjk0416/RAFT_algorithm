@@ -4,6 +4,7 @@ import os
 from Node.heartbeat import AppendEntryMessage
 import heartbeat
 import nodes
+import json
 #persistent data
 voted_for = None
 which_term = 0
@@ -16,9 +17,11 @@ Log =[]
 def send_heartbeat(name):
     msg = AppendEntryMessage({ "leaderId": name,"Entries":[],"prevLogIndex":-1,"prevLogTerm":-1})
     # need to figure out how to send info to other threads 
-    # for x in nodes.nodes:
-    #     if x.name != name:
-    #         print("sedning to follower node")
+    for x in nodes.nodes:
+         if x.name != name:
+            skt.sendto(json.dumps(msg).encode('utf-8'), (x))
+
 
 if __name__ =='__main__':
+    skt = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
