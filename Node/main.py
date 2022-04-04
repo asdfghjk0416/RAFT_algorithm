@@ -9,6 +9,7 @@ import json
 voted_for = None
 which_term = 0
 Log =[]
+node1 = nodes.nodes[0]
 
 
 
@@ -24,4 +25,6 @@ def send_heartbeat(name):
 
 if __name__ =='__main__':
     skt = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+    skt.bind((node1, 5555))
+
 
