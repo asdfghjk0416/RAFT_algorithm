@@ -9,7 +9,7 @@ import json
 voted_for = None
 which_term = 0
 Log =[]
-node1 = nodes.nodes[0]
+node1 = nodes.nodes[0].name
 
 
 
