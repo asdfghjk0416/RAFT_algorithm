@@ -4,3 +4,5 @@ COPY . .
 
 EXPOSE 5555
 
+ENTRYPOINT [ "python", "-u" , "main.py"]
+
