@@ -12,11 +12,14 @@ import traceback
 
 # persistent data
 voted_for = None
+global which_term
 which_term = 0
 Log = []
 # node1 = nodes.nodes[0].name
 global state
 state = "follower"
+global votes_receieved
+votes_receieved = 0
 
 
 # references: https://docs.python.org/3/howto/sockets.html
@@ -30,6 +33,9 @@ def send_heartbeat(skt, name):
     for x in nodes.nodes:
         if x.name != name:
             skt.sendto(json.dumps(msg).encode("utf-8"), (x))
+
+def send_vote_request(skt):
+    
 
 
 def listener(skt: socket):
@@ -48,15 +54,16 @@ def listener(skt: socket):
         except:
             print("timeout")
 
-            
-
-            if (state == "follower"):
+            if state == "follower":
                 print("here4")
+                which_term += 1
                 state = "candidate"
-                q = RequestVoteRPC()
+                votes_receieved += 1
+                voteReq = RequestVoteRPC(which_term, "node", -1, 0)
+
                 # request vote from other nodes
             else:
-                print("state is: ",state, timeNow)
+                print("state is: ", state, timeNow)
                 # possible issue that the value keeps reseting everytime it doesn't recieve a heartbeat, essentially pushing the timedout val later andlater
                 # timeout = random.uniform(100, 500)
                 # endOfTimeout += timeout
