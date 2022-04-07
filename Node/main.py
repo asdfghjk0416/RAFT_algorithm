@@ -2,7 +2,7 @@ from platform import node
 import socket
 import threading
 import os
-from heartbeat import AppendEntryMessage
+from heartbeat import AppendEntryMessage, RequestVoteRPC
 import heartbeat
 import nodes
 import json
@@ -14,7 +14,7 @@ import traceback
 voted_for = None
 which_term = 0
 Log = []
-node1 = nodes.nodes[0].name
+# node1 = nodes.nodes[0].name
 global state
 state = "follower"
 
@@ -23,7 +23,7 @@ state = "follower"
 def send_heartbeat(skt, name):
     print("leader is executed")
     msg = AppendEntryMessage(
-        {"leaderId": name, "Entries": [], "prevLogIndex": -1, "prevLogTerm": -1}
+        {"leaderId": name, "Entries": [], "prevLogIndex": -1, "prevLogTerm": which_term}
     )
 
     #  does this need to be an infinite loop
@@ -50,21 +50,17 @@ def listener(skt: socket):
 
             
 
-            if (state == "follower" and timeNow >= endOfTimeout):
+            if (state == "follower"):
                 print("here4")
                 state = "candidate"
+                q = RequestVoteRPC()
                 # request vote from other nodes
-            elif (state == "candidate" and timeNow >= endOfTimeout):
-                print("here5")
-                state == "leader"
-                # need to send in node id val
-                threading.Thread(target=send_heartbeat, args=[skt, "dv"]).start()
             else:
                 print("state is: ",state, timeNow)
                 # possible issue that the value keeps reseting everytime it doesn't recieve a heartbeat, essentially pushing the timedout val later andlater
-                timeout = random.uniform(100, 500)
-                endOfTimeout += timeout
-                endOfTimeout = time.monotonic() + timeout
+                # timeout = random.uniform(100, 500)
+                # endOfTimeout += timeout
+                # endOfTimeout = time.monotonic() + timeout
 
     # start election if timeout reached
 
