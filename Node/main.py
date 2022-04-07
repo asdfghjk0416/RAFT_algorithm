@@ -14,7 +14,7 @@ import traceback
 voted_for = None
 which_term = 0
 Log = []
-# node1 = nodes.nodes[0].name
+node1 = nodes[0]
 global state
 state = "follower"
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     host = "127.0.0.1"
     # Bind the node to sender ip and port
-    skt.bind((host, 5555))
+    skt.bind((node1, 5555))
 
     threading.Thread(target=listener, args=[skt]).start()
 
