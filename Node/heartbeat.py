@@ -8,5 +8,10 @@ class AppendEntryMessage():
         self.prevLogIndex = prevLogIndex
         self.prevLogTerm = prevLogTerm
 
-
+class RequestVoteRPC():
+    def __init__(self,term,candidateId,lastLogIndex,lastlogTerm):
+        self.term = term
+        self.candidateId = candidateId
+        self.lastLogIndex = lastLogIndex
+        self.lastLogTerm = lastlogTerm
 
