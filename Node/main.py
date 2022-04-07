@@ -60,7 +60,7 @@ def listener(skt: socket):
                 # need to send in node id val
                 threading.Thread(target=send_heartbeat, args=[skt, "dv"]).start()
             else:
-                print("state is: ",state, " is: ",, timeNow)
+                print("state is: ",state, timeNow)
                 # possible issue that the value keeps reseting everytime it doesn't recieve a heartbeat, essentially pushing the timedout val later andlater
                 timeout = random.uniform(100, 500)
                 endOfTimeout += timeout
