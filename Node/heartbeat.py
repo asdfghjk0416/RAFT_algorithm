@@ -8,7 +8,7 @@ def AppendEntryMessage(leaderId,prevLogTerm):
     f = open("Message.json")
 
     msg = json.load(f)
-    msg["request"] = "AppendEntryMessage"
+    msg["request"] = "APPEND_RPC"
     msg["sender_name"] = leaderId
     msg["entries"] = []
     msg["prevLogIndex"] = -1
@@ -21,7 +21,7 @@ def SendVote(thisNode):
 
     msg = json.load(f)  
 
-    msg["request"] = "SendVote"
+    msg["request"] = "VOTE_ACK"
     msg["sender_name"] = thisNode
     msg["entries"] = []
     msg["prevLogIndex"] = -1
@@ -33,7 +33,7 @@ def RequestVoteRPC(term,candidateId):
 
     msg = json.load(f)  
 
-    msg["request"] = "RequestVoteRPC"
+    msg["request"] = "VOTE_REQUEST"
     msg["sender_name"] = candidateId
     msg["entries"] = []
     msg["prevLogIndex"] = -1

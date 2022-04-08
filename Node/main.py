@@ -28,7 +28,6 @@ global votes_receieved
 votes_receieved = 0
 
 
-
 # references: https://docs.python.org/3/howto/sockets.html
 def send_heartbeat(skt):
     print("leader is executed")
@@ -50,20 +49,22 @@ def send_vote(skt, c):
     msg = SendVote(thisNode)
     skt.sendto(msg, (c, 5555))
 
+
 def listener(skt: socket):
     state = "follower"
     global endOfTimeout, which_term, votes_receieved, voted_for
     print(thisNode)
     while True:
-        t = random.uniform(30, 40)
+        t = random.uniform(1, 5)
         skt.settimeout(t)
         timeNow = time.monotonic()
         try:
             (msg, addr) = skt.recvfrom(1024)
-            print("here1")
             StrVal = msg.decode("utf-8")
             voteRequest = json.loads(StrVal)
             c = voteRequest["sender_name"]
+            if c == "Controller":
+                print("REQUEST FROM CONTROLLLLEEERRRR")
             if voteRequest["request"] == "CONVERT_FOLLOWER":
                 state = "follower"
             # if voteRequest["request"] == "TIMEOUT":
@@ -71,24 +72,28 @@ def listener(skt: socket):
             #         pass
             #     else:
             #         aleenaispretty = true
-                    
-            #         dnsio =0
 
-            elif voteRequest["request"] == "RequestVoteRPC":
+            elif voteRequest["request"] == "VOTE_REQUEST":
                 if voteRequest["prevLogTerm"] > which_term and voted_for == None:
-                    threading.Thread(target=send_vote, args=[skt,c]).start()
-                    which_term +=1
-            elif voteRequest["request"] == "SendVote":
+                    threading.Thread(target=send_vote, args=[skt, c]).start()
+                    which_term += 1
+            elif voteRequest["request"] == "VOTE_ACK":
                 votes_receieved += 1
                 if votes_receieved >= 3:
                     state = "leader"
                     threading.Thread(target=send_heartbeat, args=[skt]).start()
-                    
-            elif voteRequest["request"] == "AppendEntryMessage":
+
+            elif voteRequest["request"] == "APPEND_RPC":
                 pass
+            elif voteRequest["request"] == "TIMEOUT":
+                break
+            elif voteRequest["request"] == "SHUTDOWN":
+                print("SHUTDOWN")
+                skt.shutdown()
+                skt.close()
             else:
                 print("wtf happened")
-                
+
         except:
             print("timeout")
 
@@ -100,7 +105,8 @@ def listener(skt: socket):
                 threading.Thread(target=send_vote_request, args=[skt]).start()
                 # request vote from other nodes
             else:
-                print("state is: ", state, timeNow)
+                break
+                # print("state is: ", state, timeNow)
                 # possible issue that the value keeps reseting everytime it doesn't recieve a heartbeat, essentially pushing the timedout val later andlater
                 # timeout = random.uniform(100, 500)
                 # endOfTimeout += timeout
@@ -114,7 +120,6 @@ if __name__ == "__main__":
     # Creating Socket and binding it to the target container IP and port
     skt = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
-  
     # Bind the node to sender ip and port
     skt.bind((thisNode, 5555))
 

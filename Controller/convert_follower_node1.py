@@ -4,19 +4,19 @@ import traceback
 import time
 
 # Wait following seconds below sending the controller request
-time.sleep(5)
+time.sleep(7)
 
 # Read Message Template
 msg = json.load(open("Message.json"))
 
 # Initialize
 sender = "Controller"
-target = "Node1"
+target = "node1"
 port = 5555
 
 # Request
 msg['sender_name'] = sender
-msg['request'] = "CONVERT_FOLLOWER"
+msg['request'] = "SHUTDOWN"
 print(f"Request Created : {msg}")
 
 # Socket Creation and Binding
