@@ -1,5 +1,3 @@
-from msilib.schema import MsiAssembly
-from platform import node
 import socket
 import threading
 import os
@@ -32,14 +30,16 @@ def send_heartbeat(skt):
     msg = AppendEntryMessage(thisNode, which_term)
 
     for x in AllNodes:
-        skt.sendto(msg, (x))
+        skt.sendto(msg, (x, 5555))
 
 
 def send_vote_request(skt):
 
-    voteReq = RequestVoteRPC(which_term, "node", -1, 0)
+    voteReq = RequestVoteRPC(which_term, thisNode)
     for x in AllNodes:
         skt.sendto(voteReq, (x, 5555))
+
+
 
 
 
@@ -55,7 +55,7 @@ def listener(skt: socket):
             print("here1")
             StrVal = msg.decode("utf-8")
             JsonVal = json.loads(StrVal)
-            print("received heartbeat from:", JsonVal["leaderId"])
+
         except:
             print("timeout")
 
@@ -81,9 +81,9 @@ if __name__ == "__main__":
     # Creating Socket and binding it to the target container IP and port
     skt = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
-    host = "127.0.0.1"
+  
     # Bind the node to sender ip and port
-    skt.bind((node1, 5555))
+    skt.bind((thisNode, 5555))
 
     threading.Thread(target=listener, args=[skt]).start()
 

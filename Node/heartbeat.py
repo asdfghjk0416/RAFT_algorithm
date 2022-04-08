@@ -7,7 +7,8 @@ import json
 def AppendEntryMessage(leaderId,prevLogTerm):
     f = open("Message.json")
 
-    msg = json.load(f)  
+    msg = json.load(f)
+    msg["type"] = "AppendEntryMessage"
     msg["sender_name"] = leaderId
     msg["entries"] = []
     msg["prevLogIndex"] = -1
@@ -20,6 +21,8 @@ def RequestVoteRPC(term,candidateId):
     f = open("Message.json")
 
     msg = json.load(f)  
+
+    msg["type"] = RequestVoteRPC
     msg["sender_name"] = candidateId
     msg["entries"] = []
     msg["prevLogIndex"] = -1
