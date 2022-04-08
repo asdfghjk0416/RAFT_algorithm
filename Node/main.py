@@ -26,11 +26,10 @@ global state
 state = "follower"
 global votes_receieved
 votes_receieved = 0
-
+alive = True
 
 # references: https://docs.python.org/3/howto/sockets.html
 def send_heartbeat(skt):
-    print("leader is executed")
     msg = AppendEntryMessage(thisNode, which_term)
 
     while True:
@@ -52,9 +51,8 @@ def send_vote(skt, c):
 
 def listener(skt: socket):
     state = "follower"
-    global endOfTimeout, which_term, votes_receieved, voted_for
-    print(thisNode)
-    while True:
+    global endOfTimeout,alive, which_term, votes_receieved, voted_for
+    while alive:
         t = random.uniform(1, 5)
         skt.settimeout(t)
         timeNow = time.monotonic()
@@ -64,14 +62,8 @@ def listener(skt: socket):
             voteRequest = json.loads(StrVal)
             c = voteRequest["sender_name"]
             if c == "Controller":
-                print("REQUEST FROM CONTROLLLLEEERRRR")
             if voteRequest["request"] == "CONVERT_FOLLOWER":
                 state = "follower"
-            # if voteRequest["request"] == "TIMEOUT":
-            #     if state == "follower":
-            #         pass
-            #     else:
-            #         aleenaispretty = true
 
             elif voteRequest["request"] == "VOTE_REQUEST":
                 if voteRequest["prevLogTerm"] > which_term and voted_for == None:
@@ -81,6 +73,7 @@ def listener(skt: socket):
                 votes_receieved += 1
                 if votes_receieved >= 3:
                     state = "leader"
+                    print(thisNode, " has become a leader.")
                     threading.Thread(target=send_heartbeat, args=[skt]).start()
 
             elif voteRequest["request"] == "APPEND_RPC":
@@ -88,31 +81,25 @@ def listener(skt: socket):
             elif voteRequest["request"] == "TIMEOUT":
                 break
             elif voteRequest["request"] == "SHUTDOWN":
-                print("SHUTDOWN")
-                skt.shutdown()
-                skt.close()
+                
+                alive = False
             else:
-                print("wtf happened")
+                print("")
 
         except:
-            print("timeout")
-
             if state == "follower":
-                print("here4")
+                
                 which_term += 1
                 state = "candidate"
+                print(thisNode, " has become a candidate.")
                 votes_receieved += 1
                 threading.Thread(target=send_vote_request, args=[skt]).start()
-                # request vote from other nodes
+                
             else:
                 break
-                # print("state is: ", state, timeNow)
-                # possible issue that the value keeps reseting everytime it doesn't recieve a heartbeat, essentially pushing the timedout val later andlater
-                # timeout = random.uniform(100, 500)
-                # endOfTimeout += timeout
-                # endOfTimeout = time.monotonic() + timeout
+               
+    print("system shut down.")
 
-    # start election if timeout reached
 
 
 if __name__ == "__main__":
