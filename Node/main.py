@@ -1,7 +1,7 @@
 import socket
 import threading
 import os
-from heartbeat import AppendEntryMessage, RequestVoteRPC
+from heartbeat import AppendEntryMessage, RequestVoteRPC, SendVote
 import heartbeat
 import nodes
 import json
@@ -29,8 +29,9 @@ def send_heartbeat(skt):
     print("leader is executed")
     msg = AppendEntryMessage(thisNode, which_term)
 
-    for x in AllNodes:
-        skt.sendto(msg, (x, 5555))
+    while True:
+        for x in AllNodes:
+            skt.sendto(msg, (x, 5555))
 
 
 def send_vote_request(skt):
@@ -40,22 +41,39 @@ def send_vote_request(skt):
         skt.sendto(voteReq, (x, 5555))
 
 
-
-
+def send_vote(skt, c):
+    msg = SendVote(thisNode)
+    skt.sendto(msg, (c, 5555))
 
 def listener(skt: socket):
     state = "follower"
-    global endOfTimeout, which_term, votes_receieved
+    global endOfTimeout, which_term, votes_receieved, voted_for
+    print(thisNode)
     while True:
-        t = random.uniform(100, 500)
+        t = random.uniform(30, 40)
         skt.settimeout(t)
         timeNow = time.monotonic()
         try:
             (msg, addr) = skt.recvfrom(1024)
             print("here1")
             StrVal = msg.decode("utf-8")
-            JsonVal = json.loads(StrVal)
-
+            voteRequest = json.loads(StrVal)
+            c = voteRequest["sender_name"]
+            if voteRequest["type"] == "RequestVoteRPC":
+                if voteRequest["prevLogTerm"] > which_term and voted_for == None:
+                    threading.Thread(target=send_vote, args=[skt,c]).start()
+                    which_term +=1
+            elif voteRequest["type"] == "SendVote":
+                votes_receieved += 1
+                if votes_receieved >= 3:
+                    state = "leader"
+                    threading.Thread(target=send_heartbeat, args=[skt]).start()
+                    
+            elif voteRequest["type"] == "AppendEntryMessage":
+                pass
+            else:
+                print("wtf happened")
+                
         except:
             print("timeout")
 
