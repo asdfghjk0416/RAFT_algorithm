@@ -2,8 +2,8 @@ from operator import truediv
 import socket
 import threading
 import os
-from heartbeat import AppendEntryMessage, RequestVoteRPC, SendVote
-import heartbeat
+from requests import AppendEntryMessage, RequestVoteRPC, SendVote
+import requests
 import nodes
 import json
 import random
@@ -47,6 +47,7 @@ def send_vote_request(skt):
 def send_vote(skt, c):
     msg = SendVote(thisNode)
     skt.sendto(msg, (c, 5555))
+    print(thisNode, f" voted for {c}")
 
 
 def listener(skt: socket):
@@ -61,7 +62,6 @@ def listener(skt: socket):
             StrVal = msg.decode("utf-8")
             voteRequest = json.loads(StrVal)
             c = voteRequest["sender_name"]
-            if c == "Controller":
             if voteRequest["request"] == "CONVERT_FOLLOWER":
                 state = "follower"
 
@@ -73,7 +73,7 @@ def listener(skt: socket):
                 votes_receieved += 1
                 if votes_receieved >= 3:
                     state = "leader"
-                    print(thisNode, " has become a leader.")
+                    
                     threading.Thread(target=send_heartbeat, args=[skt]).start()
 
             elif voteRequest["request"] == "APPEND_RPC":
@@ -88,16 +88,15 @@ def listener(skt: socket):
 
         except:
             if state == "follower":
-                
                 which_term += 1
                 state = "candidate"
-                print(thisNode, " has become a candidate.")
+                print(thisNode, "has become a canidate.")
                 votes_receieved += 1
                 threading.Thread(target=send_vote_request, args=[skt]).start()
                 
             else:
                 break
-               
+
     print("system shut down.")
 
 
