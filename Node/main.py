@@ -1,3 +1,4 @@
+from msilib.schema import MsiAssembly
 from platform import node
 import socket
 import threading
@@ -12,35 +13,39 @@ import traceback
 
 # persistent data
 voted_for = None
-global which_term
+# global which_term
 which_term = 0
 Log = []
-node1 = nodes[0]
+AllNodes = ["node1", "node2", "node3", "node4", "node5"]
+thisNode = os.environ["node"]
+AllNodes.remove(thisNode)
 global state
 state = "follower"
 global votes_receieved
 votes_receieved = 0
 
 
-# references: https://docs.python.org/3/howto/sockets.html
-def send_heartbeat(skt, name):
-    print("leader is executed")
-    msg = AppendEntryMessage(
-        {"leaderId": name, "Entries": [], "prevLogIndex": -1, "prevLogTerm": which_term}
-    )
 
-    #  does this need to be an infinite loop
-    for x in nodes.nodes:
-        if x.name != name:
-            skt.sendto(json.dumps(msg).encode("utf-8"), (x))
+# references: https://docs.python.org/3/howto/sockets.html
+def send_heartbeat(skt):
+    print("leader is executed")
+    msg = AppendEntryMessage(thisNode, which_term)
+
+    for x in AllNodes:
+        skt.sendto(msg, (x))
+
 
 def send_vote_request(skt):
-    
+
+    voteReq = RequestVoteRPC(which_term, "node", -1, 0)
+    for x in AllNodes:
+        skt.sendto(voteReq, (x, 5555))
+
 
 
 def listener(skt: socket):
     state = "follower"
-    global endOfTimeout
+    global endOfTimeout, which_term, votes_receieved
     while True:
         t = random.uniform(100, 500)
         skt.settimeout(t)
@@ -59,8 +64,7 @@ def listener(skt: socket):
                 which_term += 1
                 state = "candidate"
                 votes_receieved += 1
-                voteReq = RequestVoteRPC(which_term, "node", -1, 0)
-
+                threading.Thread(target=send_vote_request, args=[skt]).start()
                 # request vote from other nodes
             else:
                 print("state is: ", state, timeNow)

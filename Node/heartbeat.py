@@ -1,17 +1,28 @@
+from email import message
 import threading
+import json
 
 
-class AppendEntryMessage():
-    def __init__(self,leaderId,entries,prevLogIndex,prevLogTerm):
-        self.leaderId = leaderId
-        self.entries =entries
-        self.prevLogIndex = prevLogIndex
-        self.prevLogTerm = prevLogTerm
 
-class RequestVoteRPC():
-    def __init__(self,term,candidateId,lastLogIndex,lastlogTerm):
-        self.term = term
-        self.candidateId = candidateId
-        self.lastLogIndex = lastLogIndex
-        self.lastLogTerm = lastlogTerm
+def AppendEntryMessage(leaderId,prevLogTerm):
+    f = open("Message.json")
 
+    msg = json.load(f)  
+    msg["sender_name"] = leaderId
+    msg["entries"] = []
+    msg["prevLogIndex"] = -1
+    msg["prevLogTerm"] = prevLogTerm
+
+    return (json.dumps(msg)).encode("utf-8")
+    
+
+def RequestVoteRPC(term,candidateId):
+    f = open("Message.json")
+
+    msg = json.load(f)  
+    msg["sender_name"] = candidateId
+    msg["entries"] = []
+    msg["prevLogIndex"] = -1
+    msg["prevLogTerm"] = term
+
+    return (json.dumps(msg)).encode("utf-8")

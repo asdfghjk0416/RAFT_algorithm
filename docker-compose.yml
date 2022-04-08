@@ -9,14 +9,19 @@ services:
    node1:
      container_name: Node1
      build: Node/.
-
+     environment:
+     - node=node1
    node2:
      container_name: Node2
      build: Node/.
+     environment:
+     - node=node2
 
    node3:
        container_name: Node3
        build: Node/.
+       environment:
+       - node=node3
 
    #Do not change the part below
    controller:
