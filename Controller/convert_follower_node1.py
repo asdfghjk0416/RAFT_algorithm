@@ -1,22 +1,23 @@
+
 import json
 import socket
 import traceback
 import time
 
 # Wait following seconds below sending the controller request
-time.sleep(7)
+time.sleep(5)
 
 # Read Message Template
 msg = json.load(open("Message.json"))
 
 # Initialize
 sender = "Controller"
-target = "node1"
+target = "node4"
 port = 5555
 
 # Request
 msg['sender_name'] = sender
-msg['request'] = "SHUTDOWN"
+msg['request'] = "TIMEOUT"
 print(f"Request Created : {msg}")
 
 # Socket Creation and Binding

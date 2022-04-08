@@ -2,7 +2,7 @@ from operator import truediv
 import socket
 import threading
 import os
-from requests import AppendEntryMessage, RequestVoteRPC, SendVote
+from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut
 import requests
 import nodes
 import json
@@ -27,12 +27,14 @@ state = "follower"
 global votes_receieved
 votes_receieved = 0
 alive = True
+leaader = ""
 
 # references: https://docs.python.org/3/howto/sockets.html
 def send_heartbeat(skt):
+    time.sleep(2)
     msg = AppendEntryMessage(thisNode, which_term)
 
-    while True:
+    while alive:
         for x in AllNodes:
             skt.sendto(msg, (x, 5555))
 
@@ -50,39 +52,61 @@ def send_vote(skt, c):
     print(thisNode, f" voted for {c}")
 
 
+def shutdown(skt):
+    msg = ShutDown(thisNode)
+    for x in AllNodes:
+        skt.sendto(msg, (x, 5555))
+
+def timeout(skt):
+    msg = TimedOut(thisNode)
+    for x in AllNodes:
+        skt.sendto(msg, (x, 5555))
+
+
 def listener(skt: socket):
     state = "follower"
-    global endOfTimeout,alive, which_term, votes_receieved, voted_for
+    global endOfTimeout, alive, which_term, leader,votes_receieved, voted_for
     while alive:
-        t = random.uniform(1, 5)
+        t = random.uniform(1, 4)
         skt.settimeout(t)
         timeNow = time.monotonic()
+        
         try:
             (msg, addr) = skt.recvfrom(1024)
             StrVal = msg.decode("utf-8")
-            voteRequest = json.loads(StrVal)
-            c = voteRequest["sender_name"]
-            if voteRequest["request"] == "CONVERT_FOLLOWER":
+            req = json.loads(StrVal)
+            sender = req["sender_name"]
+            if req["request"] == "SHUTDOWN":
+                threading.Thread(target=shutdown, args=[skt]).start()
+                
+                # print("alive is false")
+                alive = False
+            elif req["request"] == "VOTE_REQUEST":
+                if req["prevLogTerm"] > which_term and voted_for == None:
+                    threading.Thread(target=send_vote, args=[skt, sender]).start()
+                    which_term += 1
+            elif req["request"] == "TIMEOUT":
+                threading.Thread(target=timeout, args=[skt]).start()
+                # print("breaking")
+                break
+            elif req["request"] == "NodeTimeout":
+                AllNodes.remove(sender) 
+            elif req["request"] == "CONVERT_FOLLOWER":
                 state = "follower"
 
-            elif voteRequest["request"] == "VOTE_REQUEST":
-                if voteRequest["prevLogTerm"] > which_term and voted_for == None:
-                    threading.Thread(target=send_vote, args=[skt, c]).start()
-                    which_term += 1
-            elif voteRequest["request"] == "VOTE_ACK":
+           
+            elif req["request"] == "VOTE_ACK":
                 votes_receieved += 1
-                if votes_receieved >= 3:
+                if votes_receieved == 3:
                     state = "leader"
-                    
+                    print(thisNode, " has become the leader.")
                     threading.Thread(target=send_heartbeat, args=[skt]).start()
 
-            elif voteRequest["request"] == "APPEND_RPC":
-                pass
-            elif voteRequest["request"] == "TIMEOUT":
-                break
-            elif voteRequest["request"] == "SHUTDOWN":
-                
-                alive = False
+            elif req["request"] == "APPEND_RPC":
+                leader = req["sender_name"]
+            
+            elif req["request"] == "LEADER_INFO":
+                print("leader=",leader)
             else:
                 print("")
 
@@ -93,12 +117,14 @@ def listener(skt: socket):
                 print(thisNode, "has become a canidate.")
                 votes_receieved += 1
                 threading.Thread(target=send_vote_request, args=[skt]).start()
-                
+
+            elif state == "leader":
+                pass
             else:
+                print("breaking in else")
                 break
 
-    print("system shut down.")
-
+    print(f"{thisNode} shut down.")
 
 
 if __name__ == "__main__":

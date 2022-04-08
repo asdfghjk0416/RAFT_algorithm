@@ -3,6 +3,30 @@ import threading
 import json
 
 
+def TimedOut(timedOutNode):
+
+    f = open("Message.json")
+
+    msg = json.load(f)
+    msg["request"] = "NodeTimeout"
+    msg["sender_name"] = timedOutNode
+    msg["entries"] = []
+    msg["prevLogIndex"] = -1
+    msg["prevLogTerm"] = -1
+
+    return (json.dumps(msg)).encode("utf-8")
+
+def ShutDown(sender):
+    f = open("Message.json")
+
+    msg = json.load(f)
+    msg["request"] = "SHUTDOWN"
+    msg["sender_name"] = sender
+    msg["entries"] = []
+    msg["prevLogIndex"] = -1
+    msg["prevLogTerm"] = -1
+
+    return (json.dumps(msg)).encode("utf-8")
 
 def AppendEntryMessage(leaderId,prevLogTerm):
     f = open("Message.json")
@@ -16,6 +40,7 @@ def AppendEntryMessage(leaderId,prevLogTerm):
 
     return (json.dumps(msg)).encode("utf-8")
     
+
 def SendVote(thisNode):
     f = open("Message.json")
 
