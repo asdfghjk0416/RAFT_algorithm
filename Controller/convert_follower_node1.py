@@ -17,9 +17,9 @@ port = 5555
 
 # Request
 msg['sender_name'] = sender
-msg['request'] = "TIMEOUT"
+msg['request'] = "CONVERT_FOLLOWER"
 print(f"Request Created : {msg}")
-
+ 
 # Socket Creation and Binding
 skt = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 skt.bind((sender, port))

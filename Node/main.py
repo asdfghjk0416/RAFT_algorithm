@@ -100,6 +100,7 @@ def listener(skt: socket):
                 if votes_receieved == 3:
                     state = "leader"
                     print(thisNode, " has become the leader.")
+                    print(thisNode, " is sending heartbeats")
                     threading.Thread(target=send_heartbeat, args=[skt]).start()
 
             elif req["request"] == "APPEND_RPC":
