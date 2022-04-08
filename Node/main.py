@@ -1,3 +1,4 @@
+from operator import truediv
 import socket
 import threading
 import os
@@ -9,6 +10,10 @@ import random
 import time
 import traceback
 
+# CONVERT_FOLLOWER - convert the node to the follower state
+# TIMEOUT - timeout the node immediately
+# SHUTDOWN - shutdown all threads running on the node, no errors should be thrown LEADER_INFO - return leader info with key=LEADER and value=Node? which is the
+# current leader
 # persistent data
 voted_for = None
 # global which_term
@@ -59,17 +64,27 @@ def listener(skt: socket):
             StrVal = msg.decode("utf-8")
             voteRequest = json.loads(StrVal)
             c = voteRequest["sender_name"]
-            if voteRequest["type"] == "RequestVoteRPC":
+            if voteRequest["request"] == "CONVERT_FOLLOWER":
+                state = "follower"
+            # if voteRequest["request"] == "TIMEOUT":
+            #     if state == "follower":
+            #         pass
+            #     else:
+            #         aleenaispretty = true
+                    
+            #         dnsio =0
+
+            elif voteRequest["request"] == "RequestVoteRPC":
                 if voteRequest["prevLogTerm"] > which_term and voted_for == None:
                     threading.Thread(target=send_vote, args=[skt,c]).start()
                     which_term +=1
-            elif voteRequest["type"] == "SendVote":
+            elif voteRequest["request"] == "SendVote":
                 votes_receieved += 1
                 if votes_receieved >= 3:
                     state = "leader"
                     threading.Thread(target=send_heartbeat, args=[skt]).start()
                     
-            elif voteRequest["type"] == "AppendEntryMessage":
+            elif voteRequest["request"] == "AppendEntryMessage":
                 pass
             else:
                 print("wtf happened")
