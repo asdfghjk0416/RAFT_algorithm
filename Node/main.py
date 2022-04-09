@@ -1,5 +1,6 @@
 from operator import truediv
 import socket
+import this
 import threading
 import os
 from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut
@@ -92,8 +93,10 @@ def listener(skt: socket):
             elif req["request"] == "NodeTimeout":
                 AllNodes.remove(sender) 
             elif req["request"] == "CONVERT_FOLLOWER":
+                if state == "follower":
+                    print(thisNode, " is already a follower")
                 state = "follower"
-
+                
            
             elif req["request"] == "VOTE_ACK":
                 votes_receieved += 1
