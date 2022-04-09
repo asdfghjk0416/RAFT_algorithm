@@ -4,18 +4,12 @@ import this
 import threading
 import os
 from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut
-import requests
 import nodes
 import json
 import random
 import time
 import traceback
 
-# CONVERT_FOLLOWER - convert the node to the follower state
-# TIMEOUT - timeout the node immediately
-# SHUTDOWN - shutdown all threads running on the node, no errors should be thrown LEADER_INFO - return leader info with key=LEADER and value=Node? which is the
-# current leader
-# persistent data
 voted_for = None
 # global which_term
 which_term = 0
