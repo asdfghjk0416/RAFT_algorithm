@@ -71,16 +71,18 @@ def RequestVoteRPC(term, candidateId):
     return (json.dumps(msg)).encode("utf-8")
 
 
-def RetrieveMessage(term, candidateId, log):
+def RetrieveMessage(term, candidateId, log,key="COMMITTED_LOGS", request="RETRIEVE"):
     f = open("Message.json")
 
     msg = json.load(f)
 
-    msg["request"] = "RETRIEVE"
+    msg["request"] = request
     msg["sender_name"] = candidateId
-    msg["term"] = "null"
+    msg["term"] = term
     msg["key"] = "COMMITTED_LOGS"
     msg["value"] = log
 
     return msg
     # return (json.dumps(msg)).encode("utf-8")
+
+

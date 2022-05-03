@@ -59,6 +59,21 @@ def timeout(skt):
     for x in AllNodes:
         skt.sendto(msg, (x, 5555))
 
+def retrieve(skt, nodeSender):
+
+    if state == "leader":
+        msg = RetrieveMessage(which_term, thisNode, log)
+        for i in msg:
+            print(i)
+    elif nodeSender == "Controller":
+        msg = RetrieveMessage(which_term, thisNode, log)
+        msgBytes = (json.dumps(msg)).encode("utf-8")
+        for x in AllNodes:
+            skt.sendto(msgBytes, (x, 5555))
+    else:
+        msg = RetrieveMessage(which_term, thisNode, log)
+
+
 
 def listener(skt: socket):
     state = "follower"
@@ -106,10 +121,8 @@ def listener(skt: socket):
             elif req["request"] == "LEADER_INFO":
                 print("leader=",leader)
             elif req["request"] == "RETRIEVE":
-                if state == "leader":
-                    RetrieveMessage(which_term, thisNode, log)
-                else:
-                    print("retry for leader")
+                nodeSender = req["sender_name"]
+                threading.Thread(target=retrieve, args=[skt]).start()
             else:
                 print("")
 
