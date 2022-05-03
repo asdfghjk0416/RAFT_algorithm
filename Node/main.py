@@ -1,9 +1,11 @@
 from operator import truediv
+import re
 import socket
 import this
 import threading
 import os
-from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut
+from urllib import request
+from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut, RetrieveMessage
 import nodes
 import json
 import random
@@ -60,7 +62,7 @@ def timeout(skt):
 
 def listener(skt: socket):
     state = "follower"
-    global endOfTimeout, alive, which_term, leader,votes_receieved, voted_for
+    global endOfTimeout, alive, which_term, leader,votes_receieved, voted_for, log
     while alive:
         t = random.uniform(1, 4)
         skt.settimeout(t)
@@ -90,8 +92,6 @@ def listener(skt: socket):
                 if state == "follower":
                     print(thisNode, " is already a follower")
                 state = "follower"
-                
-           
             elif req["request"] == "VOTE_ACK":
                 votes_receieved += 1
                 if votes_receieved == 3:
@@ -105,6 +105,11 @@ def listener(skt: socket):
             
             elif req["request"] == "LEADER_INFO":
                 print("leader=",leader)
+            elif req["request"] == "RETRIEVE":
+                if state == "leader":
+                    RetrieveMessage(which_term, thisNode, log)
+                else:
+                    print("retry for leader")
             else:
                 print("")
 
