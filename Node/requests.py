@@ -64,4 +64,11 @@ def RequestVoteRPC(term,candidateId):
     msg["prevLogIndex"] = -1
     msg["prevLogTerm"] = term
 
-    return (json.dumps(msg)).encode("utf-8")
+def store(thisNode,term,leaderId):
+    f = open("Message.json")
+    f["sender_name"]= thisNode
+    f["term"] = term
+    f["request"] = "LEADER_INFO"
+    f["key"] = "LEADER"
+    f["value"] = leaderId
+    return (json.dumps(f)).encode("utf-8")

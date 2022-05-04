@@ -3,7 +3,7 @@ import socket
 import this
 import threading
 import os
-from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut
+from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut, store
 import nodes
 import json
 import random
@@ -22,7 +22,7 @@ state = "follower"
 global votes_receieved
 votes_receieved = 0
 alive = True
-leaader = ""
+leader = ""
 
 # references: https://docs.python.org/3/howto/sockets.html
 def send_heartbeat(skt):
@@ -57,6 +57,10 @@ def timeout(skt):
     for x in AllNodes:
         skt.sendto(msg, (x, 5555))
 
+def leaderInfo(skt):
+    msg = store(thisNode,which_term,leader)
+    print(msg)
+    skt.sendto(msg,('Controller',5555))
 
 def listener(skt: socket):
     state = "follower"
@@ -90,8 +94,13 @@ def listener(skt: socket):
                 if state == "follower":
                     print(thisNode, " is already a follower")
                 state = "follower"
-                
-           
+            elif req["request"] == "STORE":
+                if state == "leader":
+                    info = {'Term':which_term,'Key':msg['key'],'Value':msg['value']}
+                    Log.append(info) 
+                else:
+                    print("not leader")
+                    threading.Thread(target=leaderInfo, args=[skt]).start()
             elif req["request"] == "VOTE_ACK":
                 votes_receieved += 1
                 if votes_receieved == 3:
