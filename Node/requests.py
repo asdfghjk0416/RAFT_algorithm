@@ -16,6 +16,7 @@ def TimedOut(timedOutNode):
 
     return (json.dumps(msg)).encode("utf-8")
 
+
 def ShutDown(sender):
     f = open("Message.json")
 
@@ -28,7 +29,8 @@ def ShutDown(sender):
 
     return (json.dumps(msg)).encode("utf-8")
 
-def AppendEntryMessage(leaderId,prevLogTerm):
+
+def AppendEntryMessage(leaderId, prevLogTerm):
     f = open("Message.json")
 
     msg = json.load(f)
@@ -39,12 +41,12 @@ def AppendEntryMessage(leaderId,prevLogTerm):
     msg["prevLogTerm"] = -1
 
     return (json.dumps(msg)).encode("utf-8")
-    
+
 
 def SendVote(thisNode):
     f = open("Message.json")
 
-    msg = json.load(f)  
+    msg = json.load(f)
 
     msg["request"] = "VOTE_ACK"
     msg["sender_name"] = thisNode
@@ -53,16 +55,19 @@ def SendVote(thisNode):
     msg["prevLogTerm"] = -1
 
     return (json.dumps(msg)).encode("utf-8")
-def RequestVoteRPC(term,candidateId):
+
+
+def RequestVoteRPC(term, candidateId):
     f = open("Message.json")
 
-    msg = json.load(f)  
+    msg = json.load(f)
 
     msg["request"] = "VOTE_REQUEST"
     msg["sender_name"] = candidateId
     msg["entries"] = []
     msg["prevLogIndex"] = -1
     msg["prevLogTerm"] = term
+
 
 def store(thisNode,term,leaderId):
     f = open("Message.json")
@@ -72,3 +77,21 @@ def store(thisNode,term,leaderId):
     f["key"] = "LEADER"
     f["value"] = leaderId
     return (json.dumps(f)).encode("utf-8")
+
+    return (json.dumps(msg)).encode("utf-8")
+
+
+def RetrieveMessage(term, candidateId, log,key="COMMITTED_LOGS", request="RETRIEVE"):
+    f = open("Message.json")
+
+    msg = json.load(f)
+
+    msg["request"] = request
+    msg["sender_name"] = candidateId
+    msg["term"] = term
+    msg["key"] = "COMMITTED_LOGS"
+    msg["value"] = log
+
+    return msg
+    # return (json.dumps(msg)).encode("utf-8")
+

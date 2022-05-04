@@ -1,9 +1,12 @@
 from operator import truediv
+import re
 import socket
 import this
 import threading
 import os
-from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut, store
+
+from urllib import request
+from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut, store, RetrieveMessage
 import nodes
 import json
 import random
@@ -57,14 +60,30 @@ def timeout(skt):
     for x in AllNodes:
         skt.sendto(msg, (x, 5555))
 
+
 def leaderInfo(skt):
     msg = store(thisNode,which_term,leader)
     print(msg)
     skt.sendto(msg,('Controller',5555))
 
+def retrieve(skt, nodeSender):
+
+    if state == "leader":
+        msg = RetrieveMessage(which_term, thisNode, log)
+        for i in msg:
+            print(i)
+    elif nodeSender == "Controller":
+        msg = RetrieveMessage(which_term, thisNode, log)
+        msgBytes = (json.dumps(msg)).encode("utf-8")
+        for x in AllNodes:
+            skt.sendto(msgBytes, (x, 5555))
+    else:
+        msg = RetrieveMessage(which_term, thisNode, log)
+
+
 def listener(skt: socket):
     state = "follower"
-    global endOfTimeout, alive, which_term, leader,votes_receieved, voted_for
+    global endOfTimeout, alive, which_term, leader,votes_receieved, voted_for, log
     while alive:
         t = random.uniform(1, 4)
         skt.settimeout(t)
@@ -94,6 +113,7 @@ def listener(skt: socket):
                 if state == "follower":
                     print(thisNode, " is already a follower")
                 state = "follower"
+
             elif req["request"] == "STORE":
                 if state == "leader":
                     info = {'Term':which_term,'Key':msg['key'],'Value':msg['value']}
@@ -114,6 +134,9 @@ def listener(skt: socket):
             
             elif req["request"] == "LEADER_INFO":
                 print("leader=",leader)
+            elif req["request"] == "RETRIEVE":
+                nodeSender = req["sender_name"]
+                threading.Thread(target=retrieve, args=[skt]).start()
             else:
                 print("")
 
