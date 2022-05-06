@@ -3,7 +3,7 @@ import socket
 import this
 import threading
 import os
-from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut
+from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut, store
 import nodes
 import json
 import random
@@ -40,7 +40,10 @@ def send_vote_request(skt):
     for x in AllNodes:
         skt.sendto(voteReq, (x, 5555))
 
-
+def leaderInfo(skt):
+    msg = store(thisNode,which_term,leader)
+    print(msg)
+    skt.sendto(msg,('Controller',5555))
 def send_vote(skt, c):
     msg = SendVote(thisNode)
     skt.sendto(msg, (c, 5555))
@@ -90,7 +93,14 @@ def listener(skt: socket):
                 if state == "follower":
                     print(thisNode, " is already a follower")
                 state = "follower"
-                
+
+            elif req["request"] == "STORE":
+                if state == "leader":
+                    info = {'Term':which_term,'Key':msg['key'],'Value':msg['value']}
+                    Log.append(info) 
+                else:
+                    print("not leader")
+                    threading.Thread(target=leaderInfo, args=[skt]).start()
            
             elif req["request"] == "VOTE_ACK":
                 votes_receieved += 1
@@ -104,7 +114,7 @@ def listener(skt: socket):
                 leader = req["sender_name"]
             
             elif req["request"] == "LEADER_INFO":
-                print("leader=",leader)
+                print("leader=",leader, " log=", Log)
             else:
                 print("")
 
@@ -122,7 +132,7 @@ def listener(skt: socket):
                 print("breaking in else")
                 break
 
-    print(f"{thisNode} shut down.")
+    print(f"{thisNode} has shut down.")
 
 
 if __name__ == "__main__":
