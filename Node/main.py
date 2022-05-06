@@ -30,9 +30,7 @@ state = "follower"
 global votes_receieved
 votes_receieved = 0
 alive = True
-leader = ""
-matchIndex = [0,0,0,0,0]
-lastApplied = -1
+leaader = ""
 
 # references: https://docs.python.org/3/howto/sockets.html
 def send_heartbeat(skt):
@@ -135,10 +133,8 @@ def listener(skt: socket):
                     threading.Thread(target=send_heartbeat, args=[skt]).start()
 
             elif req["request"] == "APPEND_RPC":
-                global leader
                 leader = req["sender_name"]
-                threading.Thread(target=send_heartbeat, args=[skt]).start()
-  
+
             elif req["request"] == "LEADER_INFO":
                 print("leader=", leader, " log=", Log)
 
