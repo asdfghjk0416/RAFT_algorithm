@@ -30,11 +30,13 @@ def trySending(msg, target="node4", port=5555, sender="Controller"):
         print(f"ERROR WHILE SENDING REQUEST ACROSS : {traceback.format_exc()}")
 
 
-
-
 # REQUESTS
-time.sleep(5)
+time.sleep(10)
+print("EXECUTING STORE")
 msg = createmsg(request="STORE")
-trySending(msg)
+trySending(msg=msg)
 
-
+# time.sleep(5)
+# print("EXECUTING RETRIEVE")
+# msg1 = createmsg(request="RETRIEVE")
+# trySending(msg=msg1)

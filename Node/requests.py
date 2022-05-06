@@ -71,13 +71,27 @@ def RequestVoteRPC(term, candidateId):
     return (json.dumps(msg)).encode("utf-8")
 
 
-def store(thisNode, term, leaderId):
+def store(thisNode, term, leaderId, request="LEADER_INFO"):
     f = open("Message.json")
 
     msg = json.load(f)
     msg["sender_name"] = thisNode
     msg["term"] = term
-    msg["request"] = "LEADER_INFO"
+    msg["request"] = request
     msg["key"] = "LEADER"
     msg["value"] = leaderId
+    return (json.dumps(msg)).encode("utf-8")
+
+
+def RetrieveMessage(candidateId, log):
+    f = open("Message.json")
+
+    msg = json.load(f)
+
+    msg["request"] = "RETRIEVE"
+    msg["sender_name"] = candidateId
+    msg["term"] = "null"
+    msg["key"] = "COMMITTED_LOGS"
+    msg["value"] = log
+
     return (json.dumps(msg)).encode("utf-8")

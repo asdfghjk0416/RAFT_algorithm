@@ -3,7 +3,15 @@ import socket
 import this
 import threading
 import os
-from requests import ShutDown, AppendEntryMessage, RequestVoteRPC, SendVote, TimedOut, store
+from requests import (
+    ShutDown,
+    AppendEntryMessage,
+    RequestVoteRPC,
+    SendVote,
+    TimedOut,
+    store,
+    RetrieveMessage,
+)
 import nodes
 import json
 import random
@@ -40,10 +48,31 @@ def send_vote_request(skt):
     for x in AllNodes:
         skt.sendto(voteReq, (x, 5555))
 
+
 def leaderInfo(skt):
-    msg = store(thisNode,which_term,leader)
+    msg = store(thisNode, which_term, leader)
     print(msg)
-    skt.sendto(msg,('Controller',5555))
+    skt.sendto(msg, ("Controller", 5555))
+
+
+def retryRetrieve(skt):
+    msg = RetrieveMessage(thisNode, Log)
+    for x in AllNodes:
+        skt.sendto(msg, (x, 5555))
+
+
+def retryStore(skt):
+    msg = store(thisNode, which_term, leader, "STORE")
+    for x in AllNodes:
+        skt.sendto(msg, (x, 5555))
+
+
+def sendCommittedLogs(skt):
+    msg = RetrieveMessage(thisNode, Log)
+    print("SENDING COMMITTED LOGS TO THE CONTROLLER")
+    skt.sendto(msg, ("Controller", 5555))
+
+
 def send_vote(skt, c):
     msg = SendVote(thisNode)
     skt.sendto(msg, (c, 5555))
@@ -55,6 +84,7 @@ def shutdown(skt):
     for x in AllNodes:
         skt.sendto(msg, (x, 5555))
 
+
 def timeout(skt):
     msg = TimedOut(thisNode)
     for x in AllNodes:
@@ -63,12 +93,12 @@ def timeout(skt):
 
 def listener(skt: socket):
     state = "follower"
-    global endOfTimeout, alive, which_term, leader,votes_receieved, voted_for
+    global endOfTimeout, alive, which_term, leader, votes_receieved, voted_for
     while alive:
         t = random.uniform(1, 4)
         skt.settimeout(t)
         timeNow = time.monotonic()
-        
+
         try:
             (msg, addr) = skt.recvfrom(1024)
             StrVal = msg.decode("utf-8")
@@ -76,7 +106,7 @@ def listener(skt: socket):
             sender = req["sender_name"]
             if req["request"] == "SHUTDOWN":
                 threading.Thread(target=shutdown, args=[skt]).start()
-                
+
                 # print("alive is false")
                 alive = False
             elif req["request"] == "VOTE_REQUEST":
@@ -88,20 +118,12 @@ def listener(skt: socket):
                 # print("breaking")
                 break
             elif req["request"] == "NodeTimeout":
-                AllNodes.remove(sender) 
+                AllNodes.remove(sender)
             elif req["request"] == "CONVERT_FOLLOWER":
                 if state == "follower":
                     print(thisNode, " is already a follower")
                 state = "follower"
 
-            elif req["request"] == "STORE":
-                if state == "leader":
-                    info = {'Term':which_term,'Key':msg['key'],'Value':msg['value']}
-                    Log.append(info) 
-                else:
-                    print("not leader")
-                    threading.Thread(target=leaderInfo, args=[skt]).start()
-           
             elif req["request"] == "VOTE_ACK":
                 votes_receieved += 1
                 if votes_receieved == 3:
@@ -112,9 +134,35 @@ def listener(skt: socket):
 
             elif req["request"] == "APPEND_RPC":
                 leader = req["sender_name"]
-            
+
             elif req["request"] == "LEADER_INFO":
-                print("leader=",leader, " log=", Log)
+                print("leader=", leader, " log=", Log)
+
+            elif req["request"] == "STORE":
+                if state == "leader":
+                    print("LEADER IS STORING LOG")
+                    info = {
+                        "Term": which_term,
+                        "Key": msg["key"],
+                        "Value": msg["value"],
+                    }
+                    Log.append(info)
+                else:
+                    print("not leader")
+                    threading.Thread(target=leaderInfo, args=[skt]).start()
+                    if req["sender_name"] == "Controller":
+                        threading.Thread(target=retryStore, args=[skt]).start()
+
+            elif req["request"] == "RETRIEVE":
+                if state == "leader":
+                    print("RETRIEVE REQUEST TO THE LEADER")
+                    threading.Thread(target=sendCommittedLogs, args=[skt]).start()
+                else:
+                    print("RETRIEVE REQUEST NOT TO LEADER")
+                    threading.Thread(target=leaderInfo, args=[skt]).start()
+                    if req["sender_name"] == "Controller":
+                        threading.Thread(target=retryRetrieve, args=[skt]).start()
+
             else:
                 print("")
 
