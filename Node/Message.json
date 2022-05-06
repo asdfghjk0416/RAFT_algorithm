@@ -3,5 +3,11 @@
   "request": null,
   "term": null,
   "key": null,
-  "value": null
+  "value": null,
+  "log": [],
+  "prevLogTerm": 0, 
+  "prevLogIndex":0,
+  "commitIndex":0,
+  "success":null,
+  "entry":null
 }
