@@ -92,10 +92,10 @@ def timeout(skt):
     for x in AllNodes:
         skt.sendto(msg, (x, 5555))
 
-def rpc(skt,info):
-    msg = AppendEntryMessage(thisNode, which_term,info)
-    for x in AllNodes:
-        skt.sendto(msg,(x,5555))
+# def rpc(skt,info):
+#     msg = AppendEntryMessage(thisNode, which_term,info)
+#     for x in AllNodes:
+#         skt.sendto(msg,(x,5555))
 
 
 def listener(skt: socket):
@@ -141,21 +141,21 @@ def listener(skt: socket):
 
             elif req["request"] == "APPEND_RPC":
                 leader = req["sender_name"]
-                if req["entries"] is Empty:
-                    print("entry is empty")
-                    if state == "candidate":
-                        if which_term  != req["term"]:
-                            which_term = req["term"]
-                        state="follower"
-                elif Log == []:
-                    info = {
-                        "Term": which_term,
-                        "Key": msg["key"],
-                        "Value": msg["value"],
-                    }
-                    Log.append(info)
-                    idx = idx + 1
-                    threading.Thread(target=rpc, args=[skt,info]).start()
+                # if req["entries"] is Empty:
+                #     print("entry is empty")
+                #     if state == "candidate":
+                #         if which_term  != req["term"]:
+                #             which_term = req["term"]
+                #         state="follower"
+                # elif Log == []:
+                #     info = {
+                #         "Term": which_term,
+                #         "Key": msg["key"],
+                #         "Value": msg["value"],
+                #     }
+                #     Log.append(info)
+                #     idx = idx + 1
+                #     threading.Thread(target=rpc, args=[skt,info]).start()
 
             elif req["request"] == "LEADER_INFO":
                 print("leader=", leader, " log=", Log)

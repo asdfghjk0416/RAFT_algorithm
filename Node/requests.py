@@ -30,18 +30,31 @@ def ShutDown(sender):
     return (json.dumps(msg)).encode("utf-8")
 
 
-def AppendEntryMessage(leaderId, prevLogTerm,entries=None,Log=[],commitIndex= -1,prevLogIndex= -1):
+# def AppendEntryMessage(leaderId, prevLogTerm,entries=None,Log=[],commitIndex= -1,prevLogIndex= -1):
+#     f = open("Message.json")
+
+#     msg = json.load(f)
+#     msg["request"] = "APPEND_RPC"
+#     msg["sender_name"] = leaderId
+#     msg["entries"] = []
+#     msg["log"] = Log
+#     msg["prevLogIndex"] = -1
+#     msg["prevLogTerm"] = -1
+
+#     return (json.dumps(msg)).encode("utf-8")
+
+def AppendEntryMessage(leaderId, prevLogTerm):
     f = open("Message.json")
 
     msg = json.load(f)
     msg["request"] = "APPEND_RPC"
     msg["sender_name"] = leaderId
     msg["entries"] = []
-    msg["log"] = Log
     msg["prevLogIndex"] = -1
     msg["prevLogTerm"] = -1
 
     return (json.dumps(msg)).encode("utf-8")
+
 
 
 def SendVote(thisNode):
