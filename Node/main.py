@@ -22,7 +22,7 @@ import traceback
 voted_for = None
 # global which_term
 which_term = 0
-Log = []
+Log = {}
 AllNodes = ["node1", "node2", "node3", "node4", "node5"]
 thisNode = os.environ["node"]
 AllNodes.remove(thisNode)
@@ -146,6 +146,7 @@ def listener(skt: socket):
                     print("APPENDRPC SUCCESS=FALSE")
                 else:
                     print("APPENDRPC SUCCESS=TRUE")
+                    print("Matched Log: ", Log)
                 # if req["entries"] is Empty:
                 #     print("entry is empty")
                 #     if state == "candidate":
@@ -178,6 +179,7 @@ def listener(skt: socket):
                     print("not leader")
                     threading.Thread(target=leaderInfo, args=[skt]).start()
                     if req["sender_name"] == "Controller":
+                        print("sender is controller")
                         threading.Thread(target=retryStore, args=[skt]).start()
 
             elif req["request"] == "RETRIEVE":
