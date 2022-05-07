@@ -52,10 +52,11 @@ def listener(skt: socket):
 def trySending(skt):
     print("sending")
     global leader
-    msg = createmsg(request="STORE",key="4",value="value4")
+    msg = createmsg(request="STORE")
+    print(msg)
+    time.sleep(10)
     print(msg)
     skt.sendto(json.dumps(msg).encode("utf-8"),("node4",5555))
-    
     
 
 

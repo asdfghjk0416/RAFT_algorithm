@@ -36,7 +36,7 @@ idx = -1
 
 # references: https://docs.python.org/3/howto/sockets.html
 def send_heartbeat(skt):
-    time.sleep(2)
+    time.sleep(4)
     msg = AppendEntryMessage(thisNode, which_term)
 
     while alive:
@@ -59,6 +59,7 @@ def leaderInfo(skt):
 
 def retryRetrieve(skt):
     msg = RetrieveMessage(thisNode, Log)
+    print(msg)
     for x in AllNodes:
         skt.sendto(msg, (x, 5555))
 
@@ -71,7 +72,7 @@ def retryStore(skt):
 
 def sendCommittedLogs(skt):
     msg = RetrieveMessage(thisNode, Log)
-    print("SENDING COMMITTED LOGS TO THE CONTROLLER")
+    print(msg)
     skt.sendto(msg, ("Controller", 5555))
 
 
@@ -145,8 +146,8 @@ def listener(skt: socket):
                 if which_term > req["term"]:
                     print("APPENDRPC SUCCESS=FALSE")
                 else:
-                    print("APPENDRPC SUCCESS=TRUE")
-                    print("Matched Log: ", Log)
+                    print("APPENDRPC SUCCESS=TRUE LOG MATCHED")
+                    # print("Matched Log: ", Log)
                 # if req["entries"] is Empty:
                 #     print("entry is empty")
                 #     if state == "candidate":
