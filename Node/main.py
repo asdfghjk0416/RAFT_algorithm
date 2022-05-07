@@ -92,6 +92,7 @@ def timeout(skt):
     for x in AllNodes:
         skt.sendto(msg, (x, 5555))
 
+
 # def rpc(skt,info):
 #     msg = AppendEntryMessage(thisNode, which_term,info)
 #     for x in AllNodes:
@@ -141,6 +142,10 @@ def listener(skt: socket):
 
             elif req["request"] == "APPEND_RPC":
                 leader = req["sender_name"]
+                if which_term > req["term"]:
+                    print("APPENDRPC SUCCESS=FALSE")
+                else:
+                    print("APPENDRPC SUCCESS=TRUE")
                 # if req["entries"] is Empty:
                 #     print("entry is empty")
                 #     if state == "candidate":

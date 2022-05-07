@@ -43,7 +43,7 @@ def ShutDown(sender):
 
 #     return (json.dumps(msg)).encode("utf-8")
 
-def AppendEntryMessage(leaderId, prevLogTerm):
+def AppendEntryMessage(leaderId, term):
     f = open("Message.json")
 
     msg = json.load(f)
@@ -52,6 +52,7 @@ def AppendEntryMessage(leaderId, prevLogTerm):
     msg["entries"] = []
     msg["prevLogIndex"] = -1
     msg["prevLogTerm"] = -1
+    msg["term"] = term
 
     return (json.dumps(msg)).encode("utf-8")
 
