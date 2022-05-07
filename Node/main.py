@@ -1,4 +1,5 @@
 from operator import truediv
+from queue import Empty
 import socket
 import this
 import threading
@@ -31,6 +32,7 @@ global votes_receieved
 votes_receieved = 0
 alive = True
 leaader = ""
+idx = -1
 
 # references: https://docs.python.org/3/howto/sockets.html
 def send_heartbeat(skt):
@@ -90,6 +92,11 @@ def timeout(skt):
     for x in AllNodes:
         skt.sendto(msg, (x, 5555))
 
+def rpc(skt,info):
+    msg = AppendEntryMessage(thisNode, which_term,info)
+    for x in AllNodes:
+        skt.sendto(msg,(x,5555))
+
 
 def listener(skt: socket):
     state = "follower"
@@ -134,6 +141,21 @@ def listener(skt: socket):
 
             elif req["request"] == "APPEND_RPC":
                 leader = req["sender_name"]
+                if req["entries"] is Empty:
+                    print("entry is empty")
+                    if state == "candidate":
+                        if which_term  != req["term"]:
+                            which_term = req["term"]
+                        state="follower"
+                elif Log == []:
+                    info = {
+                        "Term": which_term,
+                        "Key": msg["key"],
+                        "Value": msg["value"],
+                    }
+                    Log.append(info)
+                    idx = idx + 1
+                    threading.Thread(target=rpc, args=[skt,info]).start()
 
             elif req["request"] == "LEADER_INFO":
                 print("leader=", leader, " log=", Log)
